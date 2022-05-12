@@ -4,6 +4,7 @@ from datetime import datetime
 class JCLEContactWithTS:
     email = None
     name = None
+    ename = None
     timestamp = None
 
     def __init__(self, val):
@@ -14,6 +15,7 @@ class JCLEContactWithTS:
         self.email = val[:eepos]
         timestamp_s = val[eepos + 2:]
         self.timestamp = datetime.strptime(timestamp_s, '%Y-%m-%d %H:%M:%S %z')
+        self.ename = (self.name, self.email)
         #print(F'"{self.name}" "{self.email}" "{self.timestamp}"')
 
 class JCLEntry:
@@ -79,6 +81,16 @@ class JCLEntry:
             raise ValueError(F'{type(self)}.committer is already set')
         self._committer = JCLEContactWithTS(val)
 
+class JCLStats:
+    stats_by = None
+    count = 1
+
+    def __init__(self, stats_by):
+        self.stats_by = stats_by
+
+    def __str__(self):
+        return F'{self.stats_by}: {self.count}'
+
 class JenkinsChangeLogs:
     changes_by_commit = None
 
@@ -122,6 +134,16 @@ class JenkinsChangeLogs:
             jcle.metadata.append(line)
         self.changes_by_commit[jcle.commit] = jcle
 
+    def get_summary(self, stats_by = 'committer'):
+        stats_res = dict()
+        for change in self.changes_by_commit.values():
+            change_by = getattr(change, stats_by).ename
+            if change_by not in stats_res:
+                stats_res[change_by] = JCLStats(stats_by)
+            else:
+                stats_res[change_by].count += 1
+        return stats_res
+
 if __name__ == '__main__':
     jcle = JCLEntry()
     jcle.commit = 'abcd'
@@ -141,3 +163,8 @@ if __name__ == '__main__':
 
     for cmt in jclo.changes_by_commit.values():
         print(cmt.message)
+
+    for ename, x in jclo.get_summary().items():
+        print(ename, x)
+    for ename, x in jclo.get_summary('author').items():
+        print(ename, x)
