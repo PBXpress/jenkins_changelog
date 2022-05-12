@@ -6,3 +6,4 @@ if __name__ == '__main__':
     jclo = JenkinsChangeLogs()
     for arg in sys.argv[1:]:
         jclo.append(arg)
+    print(F'Changesets Loaded: {len(jclo.changes_by_commit)}')
