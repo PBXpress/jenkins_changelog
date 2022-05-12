@@ -15,8 +15,8 @@ if __name__ == '__main__':
     for since, jclo_x in ('Beginning', jclo), (str(fdate), jclo_f):
         print(F'Stats since {since}:')
 
-        for ename, x in jclo_x.get_summary().items():
+        for ename, x in jclo_x.get_summary(order = True).items():
             print('  ', ename, x)
 
-        for ename, x in jclo_x.get_summary('author').items():
+        for ename, x in jclo_x.get_summary('author', order = True).items():
             print('  ', ename, x)

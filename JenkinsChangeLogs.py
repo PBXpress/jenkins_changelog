@@ -137,7 +137,7 @@ class JenkinsChangeLogs:
             jcle.metadata.append(line)
         self.changes_by_commit[jcle.commit] = jcle
 
-    def get_summary(self, stats_by = 'committer'):
+    def get_summary(self, stats_by = 'committer', order = False):
         stats_res = dict()
         for change in self.changes_by_commit.values():
             change_by = getattr(change, stats_by).ename
@@ -145,6 +145,8 @@ class JenkinsChangeLogs:
                 stats_res[change_by] = JCLStats(stats_by)
             else:
                 stats_res[change_by].count += 1
+        if order:
+            stats_res = dict(sorted(stats_res.items(), key = lambda x: x[1].count, reverse = True))
         return stats_res
 
     def get_filtered(self, ffunc, filter_by = 'committer'):
@@ -183,5 +185,5 @@ if __name__ == '__main__':
         print(F'Stats since {since}:')
         for ename, x in jclo_x.get_summary().items():
             print('  ', ename, x)
-        for ename, x in jclo_x.get_summary('author').items():
+        for ename, x in jclo_x.get_summary('author', order = True).items():
             print('  ', ename, x)
