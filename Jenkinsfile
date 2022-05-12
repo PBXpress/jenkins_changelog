@@ -1,3 +1,5 @@
+def worker = "jenkins_changelog"
+
 pipeline {
   agent none
   environment {
