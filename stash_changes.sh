@@ -2,7 +2,7 @@
 
 set -e
 set -o pipefail
-set -x
+#set -x
 
 CL_DIR_FP="${WORKSPACE}/${CL_DIR}"
 CL_DIR_PT="${CL_DIR_FP%.*}"
