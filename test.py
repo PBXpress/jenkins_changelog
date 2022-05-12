@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import sys
 
 from JenkinsChangeLogs import JenkinsChangeLogs
@@ -6,10 +7,16 @@ if __name__ == '__main__':
     jclo = JenkinsChangeLogs()
     for arg in sys.argv[1:]:
         jclo.append(arg)
-    print(F'Changesets Loaded: {len(jclo.changes_by_commit)}')
+    print(F'Changesets Loaded: {len(jclo)}')
 
-    for ename, x in jclo.get_summary().items():
-        print(ename, x)
+    fdate = datetime(2022, 1, 1, tzinfo = timezone.utc)
+    jclo_f = jclo.get_filtered(lambda x: x.timestamp >= fdate)
 
-    for ename, x in jclo.get_summary('author').items():
-        print(ename, x)
+    for since, jclo_x in ('Beginning', jclo), (str(fdate), jclo_f):
+        print(F'Stats since {since}:')
+
+        for ename, x in jclo_x.get_summary().items():
+            print('  ', ename, x)
+
+        for ename, x in jclo_x.get_summary('author').items():
+            print('  ', ename, x)

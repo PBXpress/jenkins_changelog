@@ -100,6 +100,9 @@ class JenkinsChangeLogs:
             return
         self.append(fname)
 
+    def __len__(self):
+        return len(self.changes_by_commit)
+
     def append(self, fname):
         logs = open(fname).readlines()
         inbuf = []
@@ -144,7 +147,16 @@ class JenkinsChangeLogs:
                 stats_res[change_by].count += 1
         return stats_res
 
+    def get_filtered(self, ffunc, filter_by = 'committer'):
+        filter_res = JenkinsChangeLogs()
+        for commit, change in self.changes_by_commit.items():
+            change_by = getattr(change, filter_by)
+            if ffunc(change_by):
+                filter_res.changes_by_commit[commit] = change
+        return filter_res
+
 if __name__ == '__main__':
+    from datetime import timezone
     jcle = JCLEntry()
     jcle.commit = 'abcd'
     assert(jcle.commit == 'abcd')
@@ -164,7 +176,12 @@ if __name__ == '__main__':
     for cmt in jclo.changes_by_commit.values():
         print(cmt.message)
 
-    for ename, x in jclo.get_summary().items():
-        print(ename, x)
-    for ename, x in jclo.get_summary('author').items():
-        print(ename, x)
+    fdate = datetime(2022, 1, 1, tzinfo = timezone.utc)
+    jclo_f = jclo.get_filtered(lambda x: x.timestamp >= fdate)
+
+    for since, jclo_x in ('Beginning', jclo), (str(fdate), jclo_f):
+        print(F'Stats since {since}:')
+        for ename, x in jclo_x.get_summary().items():
+            print('  ', ename, x)
+        for ename, x in jclo_x.get_summary('author').items():
+            print('  ', ename, x)
