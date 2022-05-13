@@ -169,11 +169,17 @@ class JenkinsChangeLogs:
             jhgen.wraptag(author, 'a', href = F'mailto:{cmt.author.email}')
             return author
 
+        def wrap_nl(txt, wrap_at):
+            otxt = wrap(txt, wrap_at)
+            if len(otxt) > 1:
+                otxt.append('')
+            return otxt
+
         def gen_message(cmt):
-            wrap_trs = 120
-            if max([len(x) for x in cmt.message]) > 120:
-                wrap_at = 80
-                rmsg = [wrap(x, wrap_at) for x in cmt.message]
+            wrap_trs = 160
+            if max([len(x) for x in cmt.message]) > wrap_trs:
+                wrap_at = 120
+                rmsg = [wrap_nl(x, wrap_at) for x in cmt.message]
                 rmsg = [item for sublist in rmsg for item in sublist]
             else:
                 rmsg = [x for x in cmt.message]
@@ -186,7 +192,9 @@ class JenkinsChangeLogs:
           lambda z: gen_message(z),
         )
 
-        htmldoc = jhgen.genTable(clnames, self.changes_by_commit.values(), *cgens)
+        changes = self.changes_by_commit.values()
+        changes = sorted(changes, key = lambda x: x.committer.timestamp, reverse = True)
+        htmldoc = jhgen.genTable(clnames, changes, *cgens)
         return '\n'.join(htmldoc)
 
 if __name__ == '__main__':
