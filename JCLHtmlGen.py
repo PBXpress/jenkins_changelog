@@ -30,7 +30,7 @@ class JCLHtmlGen():
                 else:
                     assert(isinstance(cell, list) or isinstance(cell, tuple))
                     cell = [x for x in cell]
-                row.extend(JCLHtmlGen.wraptag(cell, 'td', style = 'vertical-align:top'))
+                row.extend(JCLHtmlGen.wraptag(cell, 'td', valign = 'top'))
             JCLHtmlGen.wraptag(row, 'tr')
             table.extend(row)
         JCLHtmlGen.wraptag(table, 'tbody')
