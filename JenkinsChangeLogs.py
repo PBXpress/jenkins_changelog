@@ -185,9 +185,19 @@ class JenkinsChangeLogs:
                 rmsg = [x for x in cmt.message]
             return jhgen.wraptag([html.escape(x) for x in rmsg], 'pre')
 
+        seen = dict()
+        seen['date'] = None
+
+        def gen_date(seen, cmt):
+            sdate = str(cmt.committer.timestamp).split(None, 1)[0]
+            if sdate == seen['date']:
+                return ''
+            seen['date'] = sdate
+            return sdate
+
         clnames = ('Date', 'Author', 'Message')
         cgens = (
-          lambda x: str(x.committer.timestamp),
+          lambda x: gen_date(seen, x),
           lambda y: gen_author(y),
           lambda z: gen_message(z),
         )
