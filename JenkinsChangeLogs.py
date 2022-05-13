@@ -164,9 +164,16 @@ class JenkinsChangeLogs:
     def gen_html(self):
         jhgen = JCLHtmlGen()
 
-        def gen_author(cmt):
+        seen = dict()
+        seen['date'] = None
+        seen['author'] = None
+
+        def gen_author(seen, cmt):
+            if cmt.author.ename == seen['author']:
+                return ''
             author = [html.escape(cmt.author.name)]
             jhgen.wraptag(author, 'a', href = F'mailto:{cmt.author.email}')
+            seen['author'] = cmt.author.ename
             return author
 
         def wrap_nl(txt, wrap_at):
@@ -185,20 +192,18 @@ class JenkinsChangeLogs:
                 rmsg = [x for x in cmt.message]
             return jhgen.wraptag([html.escape(x) for x in rmsg], 'pre')
 
-        seen = dict()
-        seen['date'] = None
-
         def gen_date(seen, cmt):
             sdate = str(cmt.committer.timestamp).split(None, 1)[0]
             if sdate == seen['date']:
                 return ''
             seen['date'] = sdate
+            seen['author'] = None
             return sdate
 
         clnames = ('Date', 'Author', 'Message')
         cgens = (
           lambda x: gen_date(seen, x),
-          lambda y: gen_author(y),
+          lambda y: gen_author(seen, y),
           lambda z: gen_message(z),
         )
 
