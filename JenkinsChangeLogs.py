@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from datetime import datetime
+from textwrap import wrap
 import html
 
 from JCLHtmlGen import JCLHtmlGen
@@ -163,16 +164,26 @@ class JenkinsChangeLogs:
     def gen_html(self):
         jhgen = JCLHtmlGen()
 
-        def get_author(cmt):
+        def gen_author(cmt):
             author = [html.escape(cmt.author.name)]
             jhgen.wraptag(author, 'a', href = F'mailto:{cmt.author.email}')
             return author
 
+        def gen_message(cmt):
+            wrap_trs = 120
+            if max([len(x) for x in cmt.message]) > 120:
+                wrap_at = 80
+                rmsg = [wrap(x, wrap_at) for x in cmt.message]
+                rmsg = [item for sublist in rmsg for item in sublist]
+            else:
+                rmsg = [x for x in cmt.message]
+            return jhgen.wraptag([html.escape(x) for x in rmsg], 'pre')
+
         clnames = ('Date', 'Author', 'Message')
         cgens = (
           lambda x: str(x.committer.timestamp),
-          lambda y: get_author(y),
-          lambda z: jhgen.wraptag([html.escape(x) for x in z.message], 'pre'),
+          lambda y: gen_author(y),
+          lambda z: gen_message(z),
         )
 
         htmldoc = jhgen.genTable(clnames, self.changes_by_commit.values(), *cgens)
