@@ -27,6 +27,11 @@ pipeline {
         checkout scm
         sh "${WORKSPACE}/jenkins_changelog/process_changes.sh"
       }
+      post {
+        always {
+          archiveArtifacts artifacts: 'since_*.html', fingerprint: true
+        }
+      }
     }
   }
 }

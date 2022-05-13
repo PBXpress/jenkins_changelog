@@ -20,3 +20,6 @@ if __name__ == '__main__':
 
         for ename, x in jclo_x.get_summary('author', order = True).items():
             print('  ', ename, x)
+
+        htmldoc = jclo_x.gen_html()
+        open(F'since_{since}.html', 'w').write(htmldoc)

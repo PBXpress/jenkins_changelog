@@ -1,5 +1,8 @@
 from collections import OrderedDict
 from datetime import datetime
+import html
+
+from JCLHtmlGen import JCLHtmlGen
 
 class JCLEContactWithTS:
     email = None
@@ -157,6 +160,24 @@ class JenkinsChangeLogs:
                 filter_res.changes_by_commit[commit] = change
         return filter_res
 
+    def gen_html(self):
+        jhgen = JCLHtmlGen()
+
+        def get_author(cmt):
+            author = [html.escape(cmt.author.name)]
+            jhgen.wraptag(author, 'a', href = F'mailto:{cmt.author.email}')
+            return author
+
+        clnames = ('Date', 'Author', 'Message')
+        cgens = (
+          lambda x: str(x.committer.timestamp),
+          lambda y: get_author(y),
+          lambda z: jhgen.wraptag([html.escape(x) for x in z.message], 'pre'),
+        )
+
+        htmldoc = jhgen.genTable(clnames, self.changes_by_commit.values(), *cgens)
+        return '\n'.join(htmldoc)
+
 if __name__ == '__main__':
     from datetime import timezone
     jcle = JCLEntry()
@@ -169,14 +190,19 @@ if __name__ == '__main__':
     else:
         assert(False)
 
-    flist = (('130', '5446375514878251402'), ('131', '6911635698393948001'), ('171', '9945418633305796411'))
+    flist = (
+      ('130', '5446375514878251402'),
+      ('131', '6911635698393948001'),
+      ('171', '9945418633305796411'),
+      ('172', '190640242552814648')
+    )
 
     jclo = JenkinsChangeLogs()
     for x, y in flist:
         jclo.append(F'/var/db/jenkins/workspace/build-fw-sippydo-32/changelogs.{x}/changelog{y}.xml')
 
-    for cmt in jclo.changes_by_commit.values():
-        print(cmt.message)
+    htmldoc = jclo.gen_html()
+    open('test.html', 'w').write(htmldoc)
 
     fdate = datetime(2022, 1, 1, tzinfo = timezone.utc)
     jclo_f = jclo.get_filtered(lambda x: x.timestamp >= fdate)
