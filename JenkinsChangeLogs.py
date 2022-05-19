@@ -167,6 +167,7 @@ class JenkinsChangeLogs:
         seen = dict()
         seen['date'] = None
         seen['author'] = None
+        seen['msgs'] = []
 
         def gen_author(seen, cmt):
             if cmt.author.ename == seen['author']:
@@ -174,6 +175,7 @@ class JenkinsChangeLogs:
             author = [html.escape(cmt.author.name)]
             jhgen.wraptag(author, 'a', href = F'mailto:{cmt.author.email}')
             seen['author'] = cmt.author.ename
+            seen['msgs'] = []
             return author
 
         def wrap_nl(txt, wrap_at):
@@ -182,8 +184,11 @@ class JenkinsChangeLogs:
                 otxt.append('')
             return otxt
 
-        def gen_message(cmt):
+        def gen_message(seen, cmt):
             wrap_trs = 160
+            if cmt.message in seen['msgs']:
+                return ''
+            seen['msgs'].append(cmt.message)
             if max([len(x) for x in cmt.message]) > wrap_trs:
                 wrap_at = 120
                 rmsg = [wrap_nl(x, wrap_at) for x in cmt.message]
@@ -198,13 +203,14 @@ class JenkinsChangeLogs:
                 return ''
             seen['date'] = sdate
             seen['author'] = None
+            seen['msgs'] = []
             return sdate
 
         clnames = ('Date', 'Author', 'Message')
         cgens = (
           lambda x: gen_date(seen, x),
           lambda y: gen_author(seen, y),
-          lambda z: gen_message(z),
+          lambda z: gen_message(seen, z),
         )
 
         changes = self.changes_by_commit.values()
