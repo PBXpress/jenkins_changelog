@@ -23,14 +23,19 @@ class JCLHtmlGen():
         JCLHtmlGen.wraptag(table, 'tr')
         for cmt in items:
             row = []
+            rowempty = True
             for cellget in rowgetters:
                 cell = cellget(cmt)
+                if len(cell) > 0:
+                    rowempty = False
                 if isinstance(cell, str):
                     cell = [html.escape(cell),]
                 else:
                     assert(isinstance(cell, list) or isinstance(cell, tuple))
                     cell = [x for x in cell]
                 row.extend(JCLHtmlGen.wraptag(cell, 'td', valign = 'top'))
+            if rowempty:
+                continue
             JCLHtmlGen.wraptag(row, 'tr')
             table.extend(row)
         JCLHtmlGen.wraptag(table, 'tbody')
